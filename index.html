@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Delhi Metro" />
+  <meta name="description"
+    content="Find the fastest Delhi Metro route between any two stations. Works offline. Covers all 10 DMRC lines." />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <title>Delhi Metro Navigator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow-x: hidden
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, #0f0c29 0%, #1a1a3e 55%, #24243e 100%);
+      min-height: 100vh;
+      padding-bottom: 40px
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      outline: none
+    }
+
+    input {
+      font-family: inherit;
+      outline: none
+    }
+
+    /* HEADER */
+    .hdr {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100
+    }
+
+    .hdr-title {
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px
+    }
+
+    .hdr-sub {
+      color: #F4A261;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase
+    }
+
+    .badge {
+      margin-left: auto;
+      background: rgba(244, 162, 97, .15);
+      border: 1px solid rgba(244, 162, 97, .3);
+      border-radius: 8px;
+      padding: 4px 10px;
+      color: #F4A261;
+      font-size: 11px;
+      font-weight: 700
+    }
+
+    /* CONTENT */
+    .page {
+      padding: 18px 16px 60px;
+      max-width: 500px;
+      margin: 0 auto
+    }
+
+    /* SEARCH CARD */
+    .s-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35)
+    }
+
+    .flabel {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px
+    }
+
+    .finput {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+      color: #1a1a2e;
+      transition: border .2s
+    }
+
+    .finput:focus {
+      border-color: #F4A261
+    }
+
+    .dd {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+      z-index: 200;
+      overflow: hidden;
+      max-height: 250px;
+      overflow-y: auto;
+      display: none
+    }
+
+    .ddi {
+      padding: 10px 16px;
+      font-size: 14px;
+      color: #1a1a2e;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer
+    }
+
+    .ddi:hover,
+    .ddi:active {
+      background: #fff8ee
+    }
+
+    .swap-row {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0
+    }
+
+    .swap-btn {
+      background: #fff8ee;
+      border: 2px solid #F4A261;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: transform .3s
+    }
+
+    .swap-btn:active {
+      transform: rotate(180deg)
+    }
+
+    .pref-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px
+    }
+
+    .pref-tab {
+      padding: 10px 8px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 2px solid #e2e8f0;
+      background: #f8fafc;
+      color: #94a3b8;
+      transition: all .2s;
+      text-align: center
+    }
+
+    .pref-tab .ti {
+      font-size: 15px;
+      display: block;
+      margin-bottom: 2px
+    }
+
+    .pref-tab.on {
+      background: #1a1a2e;
+      color: #F4A261;
+      border-color: #1a1a2e
+    }
+
+    .go-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1a1a2e, #24243e);
+      color: #F4A261;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
+      transition: opacity .2s
+    }
+
+    .go-btn:active {
+      opacity: .8
+    }
+
+    .err {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 10px;
+      color: #dc2626;
+      font-size: 13px;
+      font-weight: 600;
+      display: none
+    }
+
+    /* RESULTS */
+    .sum-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px
+    }
+
+    .sum-c {
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center
+    }
+
+    .sum-ic {
+      font-size: 18px;
+      margin-bottom: 4px
+    }
+
+    .sum-v {
+      color: #F4A261;
+      font-weight: 800;
+      font-size: 17px
+    }
+
+    .sum-l {
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-top: 2px
+    }
+
+    .rtabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px
+    }
+
+    .rtab {
+      background: rgba(255, 255, 255, .06);
+      border: 2px solid rgba(255, 255, 255, .1);
+      border-radius: 16px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: left
+    }
+
+    .rtab.on {
+      background: rgba(244, 162, 97, .12);
+      border-color: #F4A261
+    }
+
+    .rtab-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: #94a3b8;
+      margin-bottom: 5px
+    }
+
+    .rtab.on .rtab-lbl {
+      color: #F4A261
+    }
+
+    .rtab-val {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800
+    }
+
+    .rtab-stats {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 5px
+    }
+
+    .rtag {
+      background: rgba(255, 255, 255, .08);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 600
+    }
+
+    .rtab.on .rtag {
+      background: rgba(244, 162, 97, .15);
+      color: #F4A261
+    }
+
+    .best-tag {
+      display: inline-block;
+      margin-top: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      background: #22c55e22;
+      color: #22c55e;
+      border: 1px solid #22c55e44;
+      border-radius: 5px;
+      padding: 2px 7px
+    }
+
+    .lines-box {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 14px
+    }
+
+    .lines-lbl {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 10px
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-weight: 700;
+      font-size: 12px
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0
+    }
+
+    .route-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .35)
+    }
+
+    .route-title {
+      font-weight: 800;
+      font-size: 14px;
+      color: #1a1a2e;
+      margin-bottom: 16px
+    }
+
+    .srow {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start
+    }
+
+    .stl {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 20px
+    }
+
+    .sdot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 3px
+    }
+
+    .sbar {
+      width: 2px;
+      flex-grow: 1;
+      min-height: 22px;
+      margin: 2px 0;
+      opacity: .5
+    }
+
+    .sinfo {
+      padding-bottom: 13px;
+      flex-grow: 1
+    }
+
+    .sinfo.last {
+      padding-bottom: 0
+    }
+
+    .ic-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      background: #fff8ee;
+      color: #F4A261;
+      border: 1px solid #F4A261;
+      border-radius: 5px;
+      padding: 1px 7px;
+      margin-bottom: 3px;
+      letter-spacing: .05em
+    }
+
+    .sname {
+      font-size: 14px;
+      color: #1a1a2e
+    }
+
+    .sname.bold {
+      font-weight: 700
+    }
+
+    .sline {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .board-box {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      border-radius: 8px;
+      padding: 5px 9px
+    }
+
+    .board-box span {
+      font-size: 12px
+    }
+
+    .tips-box {
+      padding: 12px 16px;
+      background: rgba(244, 162, 97, .08);
+      border: 1px solid rgba(244, 162, 97, .2);
+      border-radius: 12px;
+      margin-bottom: 16px
+    }
+
+    .tips-title {
+      color: #F4A261;
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 6px
+    }
+
+    .tips-text {
+      color: #cbd5e1;
+      font-size: 12px;
+      line-height: 1.7
+    }
+
+    /* EMPTY */
+    .empty {
+      text-align: center;
+      padding: 36px 24px;
+      color: rgba(255, 255, 255, .25)
+    }
+
+    .empty-ic {
+      font-size: 44px;
+      margin-bottom: 12px
+    }
+
+    .empty-t {
+      font-size: 15px;
+      font-weight: 600
+    }
+
+    .empty-s {
+      font-size: 12px;
+      margin-top: 4px
+    }
+
+    /* ── COMPACT INSTALL BANNER ── */
+    .install-banner {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .1);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all .3s
+    }
+
+    .install-banner.hidden {
+      display: none
+    }
+
+    .ib-icon {
+      font-size: 28px;
+      flex-shrink: 0
+    }
+
+    .ib-text {
+      flex: 1;
+      min-width: 0
+    }
+
+    .ib-title {
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px
+    }
+
+    .ib-sub {
+      color: #94a3b8;
+      font-size: 11px;
+      margin-top: 2px;
+      line-height: 1.4
+    }
+
+    .ib-btn {
+      background: linear-gradient(135deg, #F4A261, #e07b30);
+      color: #1a1a2e;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(244, 162, 97, .35);
+      transition: all .2s;
+      flex-shrink: 0
+    }
+
+    .ib-btn:active {
+      transform: scale(.95);
+      opacity: .85
+    }
+
+    .ib-btn.installed {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(34, 197, 94, .3)
+    }
+
+    /* iOS install instructions (expandable) */
+    .ios-steps {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: none
+    }
+
+    .ios-steps.show {
+      display: block
+    }
+
+    .ios-steps-title {
+      color: #F4A261;
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase
+    }
+
+    .ios-step {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin-bottom: 8px
+    }
+
+    .ios-step:last-child {
+      margin-bottom: 0
+    }
+
+    .ios-step-n {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(244, 162, 97, .2);
+      color: #F4A261;
+      font-size: 10px;
+      font-weight: 800;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .ios-step-t {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      flex: 1
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#1a1a2e" />
+      <path d="M5 20V11l9-7 9 7v9" stroke="#F4A261" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      <rect x="10" y="14" width="8" height="6" rx="1" stroke="#e2e8f0" stroke-width="1.5" />
+      <circle cx="11.5" cy="21" r="1" fill="#F4A261" />
+      <circle cx="16.5" cy="21" r="1" fill="#F4A261" />
+    </svg>
+    <div>
+      <div class="hdr-title">Delhi Metro</div>
+      <div class="hdr-sub">Route Navigator</div>
+    </div>
+    <div class="badge" id="offline-badge" style="display:none">✈ OFFLINE</div>
+  </div>
+
+  <div class="page">
+
+    <!-- ══════════════════════════════════════════════════════
+     SEARCH CARD (NOW AT THE TOP)
+══════════════════════════════════════════════════════ -->
+    <div class="s-card">
+      <!-- Route preference -->
+      <div style="margin-bottom:14px">
+        <div class="flabel">Route Preference</div>
+        <div class="pref-tabs">
+          <button class="pref-tab on" id="pref-fastest" onclick="setPref('fastest')">
+            <span class="ti">⚡</span>Fastest Route
+          </button>
+          <button class="pref-tab" id="pref-least" onclick="setPref('least')">
+            <span class="ti">🔄</span>Least Interchanges
+          </button>
+        </div>
+      </div>
+
+      <!-- From -->
+      <div style="margin-bottom:8px">
+        <label class="flabel">From Station</label>
+        <div style="position:relative">
+          <input class="finput" id="from-inp" placeholder="Search source station…" autocomplete="off" autocorrect="off"
+            spellcheck="false" oninput="onInp('from')" onfocus="onFoc('from')" onblur="onBlur('from')" />
+          <div class="dd" id="from-dd"></div>
+        </div>
+      </div>
+
+      <!-- Swap -->
+      <div class="swap-row">
+        <button class="swap-btn" onclick="doSwap()">⇅</button>
+      </div>
+
+      <!-- To -->
+      <div style="margin-bottom:16px">
+        <label class="flabel">To Station</label>
+        <div style="position:relative">
+          <input class="finput" id="to-inp" placeholder="Search destination station…" autocomplete="off"
+            autocorrect="off" spellcheck="false" oninput="onInp('to')" onfocus="onFoc('to')" onblur="onBlur('to')" />
+          <div class="dd" id="to-dd"></div>
+        </div>
+      </div>
+
+      <button class="go-btn" onclick="doSearch()">🔍 Find Route</button>
+      <div class="err" id="err-box"></div>
+    </div>
+
+    <!-- Results -->
+    <div id="results"></div>
+
+    <!-- Empty state -->
+    <div class="empty" id="empty-state">
+      <div class="empty-ic">🚇</div>
+      <div class="empty-t">Search any two stations</div>
+      <div class="empty-s" id="stn-count"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+     COMPACT INSTALL BANNER (AT THE BOTTOM)
+══════════════════════════════════════════════════════ -->
+    <div class="install-banner" id="install-banner">
+      <div class="ib-icon">📲</div>
+      <div class="ib-text">
+        <div class="ib-title">Install as App</div>
+        <div class="ib-sub">Add to home screen · Works offline · No app store needed</div>
+      </div>
+      <button class="ib-btn" id="install-btn" onclick="handleInstall()">Install</button>
+    </div>
+
+    <!-- iOS-specific instructions (shown only on iOS when needed) -->
+    <div class="ios-steps" id="ios-steps">
+      <div class="ios-steps-title">📱 How to install on iPhone / iPad</div>
+      <div class="ios-step">
+        <div class="ios-step-n">1</div>
+        <div class="ios-step-t">Tap the <strong style="color:#F4A261">Share ↑</strong> button at the bottom of Safari
+        </div>
+      </div>
+      <div class="ios-step">
+        <div class="ios-step-n">2</div>
+        <div class="ios-step-t">Scroll down and tap <strong style="color:#F4A261">Add to Home Screen</strong></div>
+      </div>
+      <div class="ios-step">
+        <div class="ios-step-n">3</div>
+        <div class="ios-step-t">Tap <strong style="color:#F4A261">Add</strong> — done! 🎉 The app works without
+          internet.</div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+
+  <script>
+    // ══════════════════════════════════════════════════════════
+    //  METRO DATA
+    // ══════════════════════════════════════════════════════════
+    const LINES = {
+      RED: { name: "Red Line", color: "#E63946" },
+      YELLOW: { name: "Yellow Line", color: "#D4A017" },
+      BLUE: { name: "Blue Line", color: "#457B9D" },
+      BLUE_B: { name: "Blue Line (Branch)", color: "#457B9D" },
+      GREEN: { name: "Green Line", color: "#2A9D8F" },
+      VIOLET: { name: "Violet Line", color: "#7B2D8B" },
+      ORANGE: { name: "Orange Line (Airport)", color: "#E76F51" },
+      PINK: { name: "Pink Line", color: "#E91E8C" },
+      MAGENTA: { name: "Magenta Line", color: "#9B59B6" },
+      GREY: { name: "Grey Line", color: "#6C757D" },
+    };
+
+    const LS = {
+      RED: ["Shaheed Sthal (New Bus Adda)", "Hindon River", "Arthala", "Mohan Nagar", "Shyam Park", "Major Mohit Sharma Rajendra Nagar", "Raj Bagh", "Shaheed Nagar", "Dilshad Garden", "Jhilmil", "Mansarovar Park", "Shahdara", "Welcome", "Seelampur", "Shastri Park", "Kashmere Gate", "Tis Hazari", "Pul Bangash", "Pratap Nagar", "Shastri Nagar", "Inderlok", "Kanhaiya Nagar", "Keshav Puram", "Netaji Subhash Place", "Kohat Enclave", "Pitampura", "Rohini East", "Rohini West", "Rithala"],
+      YELLOW: ["Samaypur Badli", "Rohini Sector 18, 19", "Haiderpur Badli Mor", "Jahangirpuri", "Adarsh Nagar", "Azadpur", "Model Town", "GTB Nagar", "Vishwa Vidyalaya", "Vidhan Sabha", "Civil Lines", "Kashmere Gate", "Chandni Chowk", "Chawri Bazar", "New Delhi", "Rajiv Chowk", "Patel Chowk", "Central Secretariat", "Udyog Bhawan", "Lok Kalyan Marg", "Jor Bagh", "INA", "AIIMS", "Green Park", "Hauz Khas", "Malviya Nagar", "Saket", "Qutab Minar", "Chhattarpur", "Sultanpur", "Ghitorni", "Arjan Garh", "Guru Dronacharya", "Sikandarpur", "MG Road", "Iffco Chowk", "Huda City Centre"],
+      BLUE: ["Dwarka Sector 21", "Dwarka Sector 8", "Dwarka Sector 9", "Dwarka Sector 10", "Dwarka Sector 11", "Dwarka Sector 12", "Dwarka Sector 13", "Dwarka Sector 14", "Dwarka", "Dwarka Mor", "Nawada", "Uttam Nagar West", "Uttam Nagar East", "Janakpuri West", "Janakpuri East", "Tilak Nagar", "Subhash Nagar", "Tagore Garden", "Rajouri Garden", "Ramesh Nagar", "Moti Nagar", "Kirti Nagar", "Shadipur", "Patel Nagar", "Rajendra Place", "Karol Bagh", "Jhandewalan", "Ramakrishna Ashram Marg", "Rajiv Chowk", "Barakhamba Road", "Mandi House", "Pragati Maidan", "Indraprastha", "Yamuna Bank", "Laxmi Nagar", "Nirman Vihar", "Preet Vihar", "Karkardooma", "Anand Vihar ISBT", "Kaushambi", "Vaishali"],
+      BLUE_B: ["Yamuna Bank", "Mayur Vihar Phase 1", "Mayur Vihar Extension", "New Ashok Nagar", "Noida Sector 15", "Noida Sector 16", "Noida Sector 18", "Botanical Garden", "Golf Course", "Noida City Centre", "Noida Sector 34", "Noida Sector 52", "Noida Sector 61", "Noida Sector 59", "Noida Sector 62", "Noida Electronic City"],
+      GREEN: ["Brigadier Hoshiyar Singh", "Bahadurgarh City", "Pandit Shree Ram Sharma", "Tikri Kalan", "Tikri Border", "Ghevra", "Mundka Industrial Area", "Mundka", "Rajdhani Park", "Nangloi Railway Station", "Nangloi", "Surajmal Stadium", "Udyog Nagar", "Peera Garhi", "Paschim Vihar East", "Paschim Vihar West", "Madipur", "Shivaji Park", "Punjabi Bagh West", "ESI Hospital", "Inderlok"],
+      VIOLET: ["Kashmere Gate", "Lal Quila", "Jama Masjid", "Delhi Gate", "ITO", "Mandi House", "Janpath", "Central Secretariat", "Khan Market", "Jawaharlal Nehru Stadium", "Jangpura", "Lajpat Nagar", "Moolchand", "Kailash Colony", "Nehru Place", "Kalkaji Mandir", "Govindpuri", "Okhla", "Jasola \u2013 Sarita Vihar", "Mohan Estate", "Tughlakabad", "Badarpur Border", "Sarai", "NHPC Chowk", "Mewala Maharajpur", "Sector 28 Faridabad", "Bad Kal Mor", "Old Faridabad", "Neelam Chowk Ajronda", "Bata Chowk", "Escorts Mujesar", "Sant Surdas (Sihi)", "Raja Nahar Singh (Ballabhgarh)"],
+      ORANGE: ["New Delhi", "Shivaji Stadium", "Dhaula Kuan", "Delhi Aerocity", "IGI Airport (T3)", "Dwarka Sector 21"],
+      PINK: ["Majlis Park", "Azadpur", "Shalimar Bagh", "Netaji Subhash Place", "Shakurpur", "Punjabi Bagh East", "ESI Hospital", "Rajouri Garden", "Mayapuri", "Naraina Vihar", "Delhi Cantt", "Durgabai Deshmukh South Campus", "Sir M Visveswaraya Moti Bagh", "Bhikaji Cama Place", "Sarojini Nagar", "INA", "South Extension", "Lajpat Nagar", "Vinobapuri", "Ashram", "Hazrat Nizamuddin", "Mayur Vihar Phase 1", "Mayur Vihar Pocket 1", "Trilokpuri Sanjay Lake", "East Vinod Nagar \u2013 Mayur Vihar II", "Mandawali \u2013 West Vinod Nagar", "IP Extension", "Anand Vihar ISBT", "Karkardooma Court", "Johri Enclave", "Maujpur \u2013 Babarpur", "Gokulpuri", "Jaffrabad", "Maujpur", "Shiv Vihar"],
+      MAGENTA: ["Janakpuri West", "Dabri Mor \u2013 Janakpuri South", "Dashrath Puri", "Palam", "Sadar Bazar Cantonment", "Terminal 1 IGI Airport", "Shankar Vihar", "Vasant Vihar", "Munirka", "R K Puram", "IIT Delhi", "Hauz Khas", "Panchsheel Park", "Chirag Delhi", "Greater Kailash", "Nehru Enclave", "Kalkaji Mandir", "Okhla NSIC", "Sukhdev Vihar", "Jamia Millia Islamia", "Okhla Vihar", "Jasola Vihar Shaheen Bagh", "Kalindi Kunj", "Okhla Bird Sanctuary", "Botanical Garden"],
+      GREY: ["Dwarka", "Nangli", "Najafgarh"],
+    };
+
+    // ── Build graph ──────────────────────────────────────────
+    const G = {};
+    function addEdge(a, b, line) {
+      (G[a] = G[a] || []).push({ s: b, l: line });
+      (G[b] = G[b] || []).push({ s: a, l: line });
+    }
+    for (const [line, stns] of Object.entries(LS))
+      for (let i = 0; i < stns.length - 1; i++) addEdge(stns[i], stns[i + 1], line);
+
+    // ── All stations ─────────────────────────────────────────
+    const ALL = [...new Set(Object.values(LS).flat())].sort();
+    document.getElementById('stn-count').textContent =
+      'Covers all ' + ALL.length + '+ stations across 10 DMRC lines';
+
+    // ── Terminus helper ──────────────────────────────────────
+    function terminus(lineKey, board, next) {
+      const s = LS[lineKey]; if (!s) return null;
+      const ib = s.indexOf(board), ix = s.indexOf(next);
+      if (ib < 0 || ix < 0) return null;
+      return ix > ib ? s[s.length - 1] : s[0];
+    }
+
+    // ── Score a path ─────────────────────────────────────────
+    function score(path) {
+      let ic = 0;
+      for (let i = 0; i < path.length - 1; i++)
+        if (path[i].l && path[i + 1].l && path[i].l !== path[i + 1].l) ic++;
+      const t = (path.length - 1) * 3 + ic * 5;
+      return { ic, stns: path.length, t };
+    }
+
+    // ── Dijkstra fastest (time-weighted) ────────────────────
+    function djFast(start, end) {
+      if (start === end) return [{ s: start, l: null }];
+      const pq = [[0, 0, start, null, [{ s: start, l: null }]]], vis = new Map();
+      while (pq.length) {
+        pq.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+        const [cost, st, cur, arr, path] = pq.shift();
+        const k = cur + '|' + arr;
+        if (vis.has(k)) continue; vis.set(k, cost);
+        if (cur === end) return path;
+        for (const { s, l } of (G[cur] || [])) {
+          const ic = arr && l !== arr ? 5 : 0;
+          if (!vis.has(s + '|' + l)) pq.push([cost + 3 + ic, st + 1, s, l, [...path, { s, l }]]);
+        }
+      }
+      return null;
+    }
+
+    // ── Dijkstra least interchange ───────────────────────────
+    function djLeast(start, end) {
+      if (start === end) return [{ s: start, l: null }];
+      const pq = [[0, 0, start, null, [{ s: start, l: null }]]], vis = new Map();
+      while (pq.length) {
+        pq.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+        const [ic, st, cur, arr, path] = pq.shift();
+        const k = cur + '|' + arr;
+        if (vis.has(k)) continue; vis.set(k, ic);
+        if (cur === end) return path;
+        for (const { s, l } of (G[cur] || [])) {
+          const nic = ic + (arr && l !== arr ? 1 : 0);
+          if (!vis.has(s + '|' + l)) pq.push([nic, st + 1, s, l, [...path, { s, l }]]);
+        }
+      }
+      return null;
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  PWA INSTALL
+    // ══════════════════════════════════════════════════════════
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode:standalone)').matches
+      || navigator.standalone === true;
+    let deferredPrompt = null;
+
+    // Offline badge
+    window.addEventListener('online', () => {
+      document.getElementById('offline-badge').style.display = 'none';
+    });
+    window.addEventListener('offline', () => {
+      document.getElementById('offline-badge').style.display = '';
+    });
+    if (!navigator.onLine) {
+      document.getElementById('offline-badge').style.display = '';
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // SW registration failed — app still works, just no offline caching
+      });
+    }
+
+    // Capture the beforeinstallprompt event (Chrome/Edge/Android)
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Show install banner since the browser supports native install
+      document.getElementById('install-banner').classList.remove('hidden');
+    });
+
+    // When app is installed
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      markInstalled();
+    });
+
+    function markInstalled() {
+      const btn = document.getElementById('install-btn');
+      btn.textContent = '✅ Installed';
+      btn.classList.add('installed');
+      btn.disabled = true;
+      document.getElementById('ios-steps').classList.remove('show');
+    }
+
+    function handleInstall() {
+      // Already in standalone mode
+      if (isStandalone) {
+        markInstalled();
+        return;
+      }
+
+      // Chrome/Edge/Android: use native prompt
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((result) => {
+          if (result.outcome === 'accepted') markInstalled();
+          deferredPrompt = null;
+        });
+        return;
+      }
+
+      // iOS: show manual instructions
+      if (isIOS) {
+        const steps = document.getElementById('ios-steps');
+        steps.classList.toggle('show');
+        return;
+      }
+
+      // Fallback for other browsers: show iOS-style instructions
+      // (since we can't trigger native install)
+      const steps = document.getElementById('ios-steps');
+      steps.classList.toggle('show');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (isStandalone) {
+        // Already installed — hide the install banner entirely
+        document.getElementById('install-banner').classList.add('hidden');
+      } else if (isIOS) {
+        // On iOS, always show the banner (no beforeinstallprompt event)
+        document.getElementById('install-banner').classList.remove('hidden');
+      }
+      // On Android/Chrome, banner visibility is controlled by beforeinstallprompt
+    });
+
+    // ══════════════════════════════════════════════════════════
+    //  AUTOCOMPLETE
+    // ══════════════════════════════════════════════════════════
+    let fromStn = '', toStn = '';
+
+    // TODO(security): Dropdown items use safe DOM construction.
+    // Station names are from a hardcoded trusted array, not user input.
+    function showDD(which, items) {
+      const dd = document.getElementById(which + '-dd');
+      dd.replaceChildren();
+      if (!items.length) { dd.style.display = 'none'; return; }
+      items.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'ddi';
+        div.textContent = s;
+        div.addEventListener('mousedown', () => pickStn(which, s));
+        dd.appendChild(div);
+      });
+      dd.style.display = 'block';
+    }
+
+    function onInp(w) {
+      const v = document.getElementById(w + '-inp').value;
+      const ex = w === 'from' ? toStn : fromStn;
+      const res = ALL.filter(s => s !== ex && s.toLowerCase().includes(v.toLowerCase().trim())).slice(0, 8);
+      showDD(w, v.trim() ? res : []);
+      if (w === 'from') fromStn = ''; else toStn = '';
+    }
+
+    function onFoc(w) {
+      const v = document.getElementById(w + '-inp').value;
+      const ex = w === 'from' ? toStn : fromStn;
+      const res = ALL.filter(s => s !== ex && s.toLowerCase().includes(v.toLowerCase().trim())).slice(0, 8);
+      showDD(w, v.trim() ? res : []);
+    }
+
+    function onBlur(w) {
+      setTimeout(() => { document.getElementById(w + '-dd').style.display = 'none'; }, 200);
+    }
+
+    function pickStn(w, s) {
+      document.getElementById(w + '-inp').value = s;
+      document.getElementById(w + '-dd').style.display = 'none';
+      if (w === 'from') fromStn = s; else toStn = s;
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  ROUTE PREFERENCE & SEARCH
+    // ══════════════════════════════════════════════════════════
+    let pref = 'fastest', routes = null, activeKey = 'fastest';
+
+    function setPref(p) {
+      pref = p;
+      document.getElementById('pref-fastest').className = 'pref-tab' + (p === 'fastest' ? ' on' : '');
+      document.getElementById('pref-least').className = 'pref-tab' + (p === 'least' ? ' on' : '');
+    }
+
+    function doSwap() {
+      const fi = document.getElementById('from-inp'), ti = document.getElementById('to-inp');
+      const tmp = fi.value; fi.value = ti.value; ti.value = tmp;
+      const ts = fromStn; fromStn = toStn; toStn = ts;
+      clearResults();
+    }
+
+    function clearResults() {
+      document.getElementById('results').replaceChildren();
+      document.getElementById('empty-state').style.display = 'block';
+      document.getElementById('err-box').style.display = 'none';
+      routes = null;
+    }
+
+    function showErr(msg) {
+      const e = document.getElementById('err-box');
+      e.textContent = '\u26a0 ' + msg; e.style.display = 'block';
+    }
+
+    function doSearch() {
+      document.getElementById('err-box').style.display = 'none';
+      const from = fromStn || document.getElementById('from-inp').value.trim();
+      const to = toStn || document.getElementById('to-inp').value.trim();
+      if (!from || !to) { showErr('Please select both stations.'); return; }
+      if (!ALL.includes(from)) { showErr('Source station not found. Select from the list.'); return; }
+      if (!ALL.includes(to)) { showErr('Destination station not found. Select from the list.'); return; }
+      if (from === to) { showErr('Source and destination are the same.'); return; }
+
+      const fast = djFast(from, to), least = djLeast(from, to);
+      if (!fast) { showErr('No route found between these stations.'); return; }
+
+      const fs = score(fast), ls = score(least || fast);
+      const same = fs.ic === ls.ic && fs.t === ls.t;
+      routes = { fast: { path: fast, ...fs }, least: { path: least || fast, ...ls }, same };
+      activeKey = same ? 'fastest' : pref;
+      document.getElementById('empty-state').style.display = 'none';
+      renderResults();
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  RENDER RESULTS (safe DOM construction)
+    // ══════════════════════════════════════════════════════════
+    function setActive(k) { activeKey = k; renderResults(); }
+
+    function getSegments(path) {
+      const segs = []; let cl = null, cs = [];
+      for (const step of path) {
+        const l = step.l || cl;
+        if (l !== cl && cs.length) { segs.push({ line: cl, stns: cs }); cs = []; }
+        cl = l; cs.push(step.s);
+      }
+      if (cs.length) segs.push({ line: cl, stns: cs });
+      return segs;
+    }
+
+    // Helper: create element with class and optional text
+    function el(tag, cls, text) {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    }
+
+    function renderResults() {
+      const r = routes; if (!r) return;
+      const active = r[activeKey === 'fastest' ? 'fast' : 'least'];
+      const fast = r.fast, least = r.least;
+      const segs = getSegments(active.path);
+      const container = document.getElementById('results');
+      container.replaceChildren();
+
+      // Route selector tabs (only if routes differ)
+      if (!r.same) {
+        const tdiff = fast.t - least.t, icdiff = fast.ic - least.ic;
+        const tabs = el('div', 'rtabs');
+
+        // Fastest tab
+        const ftab = el('div', 'rtab' + (activeKey === 'fastest' ? ' on' : ''));
+        ftab.addEventListener('click', () => setActive('fastest'));
+        ftab.appendChild(el('div', 'rtab-lbl', '⚡ Fastest'));
+        ftab.appendChild(el('div', 'rtab-val', fast.t + ' min'));
+        const fstats = el('div', 'rtab-stats');
+        fstats.appendChild(el('span', 'rtag', fast.stns + ' stn'));
+        fstats.appendChild(el('span', 'rtag', fast.ic + ' change' + (fast.ic !== 1 ? 's' : '')));
+        ftab.appendChild(fstats);
+        if (tdiff < 0) { ftab.appendChild(el('div', 'best-tag', '\u23f1 ' + Math.abs(tdiff) + ' min faster')); }
+        tabs.appendChild(ftab);
+
+        // Least tab
+        const ltab = el('div', 'rtab' + (activeKey === 'least' ? ' on' : ''));
+        ltab.addEventListener('click', () => setActive('least'));
+        ltab.appendChild(el('div', 'rtab-lbl', '🔄 Fewer Changes'));
+        ltab.appendChild(el('div', 'rtab-val', least.ic + ' interchange' + (least.ic !== 1 ? 's' : '')));
+        const lstats = el('div', 'rtab-stats');
+        lstats.appendChild(el('span', 'rtag', least.stns + ' stn'));
+        lstats.appendChild(el('span', 'rtag', least.t + ' min'));
+        ltab.appendChild(lstats);
+        if (icdiff > 0) { ltab.appendChild(el('div', 'best-tag', '🔄 ' + icdiff + ' fewer change' + (icdiff !== 1 ? 's' : ''))); }
+        tabs.appendChild(ltab);
+
+        container.appendChild(tabs);
+      }
+
+      // Summary grid
+      const sumGrid = el('div', 'sum-grid');
+      [{ ic: '\ud83d\ude87', v: active.stns, l: 'Stations' },
+      { ic: '\u23f1', v: active.t + ' min', l: 'Est. Time' },
+      { ic: '\ud83d\udd04', v: active.ic, l: 'Interchanges' }].forEach(item => {
+        const c = el('div', 'sum-c');
+        c.appendChild(el('div', 'sum-ic', item.ic));
+        c.appendChild(el('div', 'sum-v', String(item.v)));
+        c.appendChild(el('div', 'sum-l', item.l));
+        sumGrid.appendChild(c);
+      });
+      container.appendChild(sumGrid);
+
+      // Lines used
+      const linesBox = el('div', 'lines-box');
+      linesBox.appendChild(el('div', 'lines-lbl', 'Lines Used'));
+      const pillsDiv = el('div', 'pills');
+      segs.forEach(seg => {
+        const ld = LINES[seg.line] || { color: '#888', name: seg.line };
+        const pill = el('div', 'pill');
+        pill.style.cssText = 'background:' + ld.color + '22;border:1.5px solid ' + ld.color;
+        const dotSpan = el('span', 'dot');
+        dotSpan.style.background = ld.color;
+        pill.appendChild(dotSpan);
+        const nameSpan = document.createElement('span');
+        nameSpan.style.color = ld.color;
+        nameSpan.textContent = ld.name;
+        pill.appendChild(nameSpan);
+        const countSpan = document.createElement('span');
+        countSpan.style.cssText = 'color:#94a3b8;font-size:11px';
+        countSpan.textContent = '(' + seg.stns.length + ')';
+        pill.appendChild(countSpan);
+        pillsDiv.appendChild(pill);
+      });
+      linesBox.appendChild(pillsDiv);
+      container.appendChild(linesBox);
+
+      // Step-by-step route
+      const routeCard = el('div', 'route-card');
+      routeCard.appendChild(el('div', 'route-title', 'Step-by-Step Route'));
+
+      active.path.forEach((step, idx) => {
+        const isLast = idx === active.path.length - 1;
+        const nextStep = !isLast ? active.path[idx + 1] : null;
+        const isIC = step.l && nextStep && nextStep.l && nextStep.l !== step.l;
+        const isSource = idx === 0;
+        const ld = step.l ? LINES[step.l] : null;
+        const nextLd = nextStep && nextStep.l ? LINES[nextStep.l] : null;
+        const dotColor = ld ? ld.color : '#1a1a2e';
+        const barColor = ((isSource || isIC) && nextLd) ? nextLd.color : (ld ? ld.color : '#e2e8f0');
+
+        const srow = el('div', 'srow');
+
+        // Timeline column
+        const stl = el('div', 'stl');
+        const sdot = el('div', 'sdot');
+        sdot.style.cssText = 'background:' + dotColor + ';border:3px solid ' + dotColor +
+          (isIC ? ';outline:3px solid #fff8ee;box-shadow:0 0 0 2px #F4A261' : '');
+        stl.appendChild(sdot);
+        if (!isLast) {
+          const sbar = el('div', 'sbar');
+          sbar.style.background = barColor;
+          stl.appendChild(sbar);
+        }
+        srow.appendChild(stl);
+
+        // Info column
+        const sinfo = el('div', 'sinfo' + (isLast ? ' last' : ''));
+
+        if (isIC && nextLd) {
+          sinfo.appendChild(el('div', 'ic-tag', 'INTERCHANGE \u2192 ' + nextLd.name));
+        }
+
+        sinfo.appendChild(el('div', 'sname' + ((isSource || isLast) ? ' bold' : ''), step.s));
+
+        if (ld) {
+          const sline = el('div', 'sline');
+          sline.style.color = ld.color;
+          const lineDot = el('span', 'dot');
+          lineDot.style.background = ld.color;
+          sline.appendChild(lineDot);
+          sline.appendChild(document.createTextNode(ld.name));
+          sinfo.appendChild(sline);
+        }
+
+        // Board instruction
+        const boardLine = isSource ? (nextStep && nextStep.l) : (isIC ? nextStep.l : null);
+        if (boardLine && nextStep) {
+          const t = terminus(boardLine, step.s, nextStep.s);
+          const bld = LINES[boardLine];
+          if (bld && t) {
+            const bbox = el('div', 'board-box');
+            bbox.style.cssText = 'background:' + bld.color + '15;border:1px solid ' + bld.color + '40;margin-top:5px';
+            const s1 = el('span', null, '\ud83d\ude87');
+            const s2 = document.createElement('span');
+            s2.style.cssText = 'color:' + bld.color + ';font-weight:700;font-size:12px';
+            s2.textContent = 'Board ' + bld.name;
+            const s3 = document.createElement('span');
+            s3.style.cssText = 'color:#64748b;font-size:11px';
+            s3.textContent = '\u2192 towards';
+            const s4 = document.createElement('span');
+            s4.style.cssText = 'color:#1a1a2e;font-weight:700;font-size:12px';
+            s4.textContent = t;
+            bbox.appendChild(s1);
+            bbox.appendChild(s2);
+            bbox.appendChild(s3);
+            bbox.appendChild(s4);
+            sinfo.appendChild(bbox);
+          }
+        }
+
+        srow.appendChild(sinfo);
+        routeCard.appendChild(srow);
+      });
+
+      container.appendChild(routeCard);
+
+      // Travel tips
+      const tipsBox = el('div', 'tips-box');
+      tipsBox.appendChild(el('div', 'tips-title', '\ud83d\udca1 Travel Tips'));
+      const tipsText = el('div', 'tips-text');
+      const tips = [
+        '\u2022 Allow 5\u20138 extra minutes at interchange stations',
+        '\u2022 Peak hours: 8\u201310 AM and 5\u20138 PM may have longer waits',
+        '\u2022 Token / Smart card valid on all DMRC lines',
+        '\u2022 Board the correct direction \u2014 check the terminus sign on the platform'
+      ];
+      tips.forEach((tip, i) => {
+        tipsText.appendChild(document.createTextNode(tip));
+        if (i < tips.length - 1) tipsText.appendChild(document.createElement('br'));
+      });
+      tipsBox.appendChild(tipsText);
+      container.appendChild(tipsBox);
+    }
+  </script>
+</body>
+
+</html>
