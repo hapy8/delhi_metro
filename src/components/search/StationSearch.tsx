@@ -73,7 +73,7 @@ export function StationSearch({
               No station found.
             </CommandEmpty>
             
-            <CommandGroup className="px-2">
+            <CommandGroup className="p-0">
               {stations.map((station) => {
                 const lines = getStationLineNames(station.value);
                 return (
@@ -85,7 +85,7 @@ export function StationSearch({
                       onChange(station.value);
                       setOpen(false);
                     }}
-                    className="flex items-center justify-between py-3.5 rounded-xl mx-1"
+                    className="flex items-center justify-between py-3.5 px-4 mx-0 rounded-none border-b border-border/60 last:border-b-0"
                   >
                     <div className="flex items-center gap-3 truncate">
                       <Check
