@@ -43,7 +43,7 @@ export function StationSearch({
   }, [excludeStation]);
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Drawer open={open} onOpenChange={setOpen} repositionInputs={false}>
       <DrawerTrigger asChild>
         <button
           id={id}
@@ -56,18 +56,14 @@ export function StationSearch({
         </button>
       </DrawerTrigger>
       
-      <DrawerContent className="h-[90vh] flex flex-col rounded-t-[1.5rem] bg-card">
-        <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-muted-foreground/20" />
-        
-        <div className="px-4 py-4 border-b border-border/50">
-          <h2 className="text-lg font-semibold text-center mb-4">{placeholder}</h2>
-        </div>
+      <DrawerContent className="h-[85dvh] max-h-[calc(100dvh-env(safe-area-inset-top))] flex flex-col rounded-t-[1.5rem] bg-card">
+        <div className="mx-auto mt-3 mb-2 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/20" />
 
         <Command className="flex-1 flex flex-col overflow-hidden bg-transparent">
-          <div className="px-4 py-2 border-b border-border/50">
+          <div className="px-4 py-3 border-b border-border/50">
             <CommandInput 
-              placeholder="Search station..." 
-              className="h-10 text-[16px] border-none ring-0 focus:ring-0 bg-muted/50 rounded-lg px-3" 
+              placeholder={`Search ${placeholder.toLowerCase()}...`}
+              className="h-11 text-[16px] border-none ring-0 focus:ring-0 bg-muted/50 rounded-xl px-3" 
               autoFocus
             />
           </div>
