@@ -71,7 +71,7 @@ export function StationSearch({
             </div>
           </div>
           
-          <CommandList className="flex-1 overflow-y-auto overscroll-y-contain pb-safe">
+          <CommandList className="max-h-none flex-1 overflow-y-auto overscroll-y-contain pb-safe">
             <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
               No station found.
             </CommandEmpty>
