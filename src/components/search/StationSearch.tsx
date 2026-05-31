@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Check } from "lucide-react";
+import { Command as CommandPrimitive } from "cmdk";
+import { Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
@@ -61,11 +61,14 @@ export function StationSearch({
 
         <Command className="flex-1 flex flex-col overflow-hidden bg-transparent">
           <div className="px-4 py-3 border-b border-border/50">
-            <CommandInput 
-              placeholder={`Search ${placeholder.toLowerCase()}...`}
-              className="h-11 text-[16px] border-none ring-0 focus:ring-0 bg-muted/50 rounded-xl px-3" 
-              autoFocus
-            />
+            <div className="flex items-center gap-2.5 bg-muted/50 rounded-xl px-3 h-[42px]">
+              <Search className="size-4 shrink-0 opacity-50 text-foreground" />
+              <CommandPrimitive.Input 
+                placeholder={`Search ${placeholder.toLowerCase()}...`}
+                className="flex-1 text-[16px] bg-transparent border-none outline-none ring-0 focus:ring-0 placeholder:text-muted-foreground" 
+                autoFocus
+              />
+            </div>
           </div>
           
           <CommandList className="flex-1 overflow-y-auto overscroll-y-contain pb-safe">
