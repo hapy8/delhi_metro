@@ -1,6 +1,5 @@
 # Delhi Metro PWA Navigator
 
-
 The **Delhi Metro PWA Navigator** is a fast, offline-capable Progressive Web Application designed to help commuters find the most efficient routes across the Delhi Metro network.
 
 ## Features
