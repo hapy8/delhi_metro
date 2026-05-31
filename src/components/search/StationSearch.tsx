@@ -88,7 +88,7 @@ export function StationSearch({
                       onChange(station.value);
                       setOpen(false);
                     }}
-                    className="flex items-center justify-between py-3.5 px-4 mx-0 rounded-none border-b border-border/60 last:border-b-0"
+                    className="flex items-center justify-between py-3.5 px-4 mx-0 rounded-none border-b border-border/60 last:border-b-0 data-[selected=true]:bg-transparent data-selected:bg-transparent active:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3 truncate">
                       <Check
