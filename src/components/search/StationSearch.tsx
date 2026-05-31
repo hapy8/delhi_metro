@@ -10,10 +10,10 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { ALL_STATIONS, getStationLineNames } from "@/core/data/stations";
 import { LINES } from "@/core/data/lines";
 
@@ -43,12 +43,10 @@ export function StationSearch({
   }, [excludeStation]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <button
           id={id}
-          role="combobox"
-          aria-expanded={open}
           className={cn(
             "w-full h-12 px-0 text-left text-[15px] bg-transparent outline-none ring-0 border-0 flex items-center",
             !value && "text-muted-foreground"
@@ -56,13 +54,30 @@ export function StationSearch({
         >
           <span className="truncate">{value || placeholder}</span>
         </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[calc(100vw-4rem)] max-w-[400px] p-0 rounded-xl shadow-lg" align="start">
-        <Command>
-          <CommandInput placeholder="Search station..." className="h-11 border-none ring-0 focus:ring-0" />
-          <CommandList className="max-h-[300px]">
-            <CommandEmpty>No station found.</CommandEmpty>
-            <CommandGroup>
+      </DrawerTrigger>
+      
+      <DrawerContent className="h-[90vh] flex flex-col rounded-t-[1.5rem] bg-card">
+        <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-muted-foreground/20" />
+        
+        <div className="px-4 py-4 border-b border-border/50">
+          <h2 className="text-lg font-semibold text-center mb-4">{placeholder}</h2>
+        </div>
+
+        <Command className="flex-1 flex flex-col overflow-hidden bg-transparent">
+          <div className="px-4 py-2 border-b border-border/50">
+            <CommandInput 
+              placeholder="Search station..." 
+              className="h-10 text-[16px] border-none ring-0 focus:ring-0 bg-muted/50 rounded-lg px-3" 
+              autoFocus
+            />
+          </div>
+          
+          <CommandList className="flex-1 overflow-y-auto overscroll-y-contain pb-safe">
+            <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+              No station found.
+            </CommandEmpty>
+            
+            <CommandGroup className="px-2">
               {stations.map((station) => {
                 const lines = getStationLineNames(station.value);
                 return (
@@ -74,7 +89,7 @@ export function StationSearch({
                       onChange(station.value);
                       setOpen(false);
                     }}
-                    className="flex items-center justify-between py-3 rounded-lg mx-1"
+                    className="flex items-center justify-between py-3.5 rounded-xl mx-1"
                   >
                     <div className="flex items-center gap-3 truncate">
                       <Check
@@ -83,7 +98,7 @@ export function StationSearch({
                           value === station.value ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <span className={cn("truncate text-[15px]", station.disabled && "opacity-40 line-through")}>
+                      <span className={cn("truncate text-[16px]", station.disabled && "opacity-40 line-through")}>
                         {station.label}
                       </span>
                     </div>
@@ -110,7 +125,7 @@ export function StationSearch({
             </CommandGroup>
           </CommandList>
         </Command>
-      </PopoverContent>
-    </Popover>
+      </DrawerContent>
+    </Drawer>
   );
 }
