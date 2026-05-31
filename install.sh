@@ -100,8 +100,20 @@ server {
         try_files \$uri \$uri/ /index.html;
     }
 
-    # Aggressively cache static assets (PWA performance)
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)\$ {
+    # Aggressively cache hashed assets from Vite (JS, CSS, Fonts)
+    location ^~ /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable, no-transform";
+    }
+
+    # Prevent caching for Service Worker to ensure PWA updates reliably
+    location = /sw.js {
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+    }
+
+    # Basic cache for other static assets (Images, Manifest)
+    location ~* \.(png|jpg|jpeg|gif|ico|svg|webmanifest)\$ {
         expires 30d;
         add_header Cache-Control "public, no-transform";
     }

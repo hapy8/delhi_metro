@@ -1,0 +1,280 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+
+/* ============================================================
+   DELHI METRO NAVIGATOR — DESIGN SYSTEM
+   Brand: Metro Blue × Saffron | Dark-first
+   ============================================================ */
+
+@theme inline {
+  /* ─── Typography ─── */
+  --font-sans: "Geist Variable", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono Variable", "Fira Code", ui-monospace, monospace;
+
+  /* ─── Brand Palette ─── */
+  --color-brand-50:  oklch(0.97 0.03 258);
+  --color-brand-100: oklch(0.93 0.06 258);
+  --color-brand-200: oklch(0.86 0.11 258);
+  --color-brand-300: oklch(0.76 0.17 258);
+  --color-brand-400: oklch(0.65 0.22 258);
+  --color-brand-500: oklch(0.55 0.25 258);  /* #1B4FD8 — primary */
+  --color-brand-600: oklch(0.47 0.26 258);
+  --color-brand-700: oklch(0.40 0.25 258);
+  --color-brand-800: oklch(0.33 0.22 258);
+  --color-brand-900: oklch(0.25 0.17 258);
+
+  /* ─── Accent Palette (Saffron) ─── */
+  --color-accent-50:  oklch(0.98 0.02 50);
+  --color-accent-100: oklch(0.95 0.06 50);
+  --color-accent-200: oklch(0.90 0.12 50);
+  --color-accent-300: oklch(0.83 0.18 50);
+  --color-accent-400: oklch(0.75 0.22 50);
+  --color-accent-500: oklch(0.68 0.25 50);  /* #F97316 — saffron */
+  --color-accent-600: oklch(0.60 0.24 50);
+  --color-accent-700: oklch(0.52 0.22 50);
+
+  /* ─── Semantic Color Tokens (dark mode by default) ─── */
+  --color-background:        oklch(0.07 0.005 258);
+  --color-foreground:        oklch(0.98 0.005 258);
+  --color-card:              oklch(0.10 0.008 258);
+  --color-card-foreground:   oklch(0.98 0.005 258);
+  --color-popover:           oklch(0.10 0.008 258);
+  --color-popover-foreground: oklch(0.98 0.005 258);
+  --color-primary:           oklch(0.55 0.25 258);
+  --color-primary-foreground: oklch(0.98 0.005 258);
+  --color-secondary:         oklch(0.14 0.010 258);
+  --color-secondary-foreground: oklch(0.82 0.010 258);
+  --color-muted:             oklch(0.14 0.010 258);
+  --color-muted-foreground:  oklch(0.58 0.015 258);
+  --color-accent:            oklch(0.68 0.25 50);
+  --color-accent-foreground: oklch(0.07 0.005 258);
+  --color-destructive:       oklch(0.60 0.22 25);
+  --color-destructive-foreground: oklch(0.98 0.005 258);
+  --color-border:            oklch(0.18 0.010 258);
+  --color-input:             oklch(0.14 0.010 258);
+  --color-ring:              oklch(0.55 0.25 258);
+
+  /* ─── DMRC Line Colors (for route visualization) ─── */
+  --color-line-red:     #E63946;
+  --color-line-yellow:  #FACC15;
+  --color-line-blue:    #3B82F6;
+  --color-line-green:   #10B981;
+  --color-line-violet:  #8B5CF6;
+  --color-line-orange:  #F97316;
+  --color-line-pink:    #EC4899;
+  --color-line-magenta: #A855F7;
+  --color-line-grey:    #6B7280;
+  --color-line-aqua:    #06B6D4;
+
+  /* ─── Radius ─── */
+  --radius-xs:  2px;
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  --radius:     var(--radius-lg);
+
+  /* ─── Shadows ─── */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-glow-brand: 0 0 0 3px oklch(0.55 0.25 258 / 0.25);
+  --shadow-glow-accent: 0 0 0 3px oklch(0.68 0.25 50 / 0.25);
+
+  /* ─── Motion ─── */
+  --duration-fast:   150ms;
+  --duration-base:   200ms;
+  --duration-slow:   350ms;
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:         cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:        cubic-bezier(0, 0, 0.2, 1);
+
+  /* ─── Spacing ─── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─── Layout ─── */
+  --max-content-width: 540px;
+  --header-height: 60px;
+}
+
+/* ============================================================
+   GLOBAL BASE STYLES
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Subtle gradient for depth */
+  background-image: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    oklch(0.55 0.25 258 / 0.06) 0%,
+    transparent 70%
+  );
+}
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted-foreground); }
+
+/* ─── Selection ─── */
+::selection {
+  background: oklch(0.55 0.25 258 / 0.3);
+  color: var(--color-foreground);
+}
+
+/* ─── Focus visible ring ─── */
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* ─── Tap highlight removal (mobile) ─── */
+* { -webkit-tap-highlight-color: transparent; }
+
+#root {
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   ANIMATION KEYFRAMES
+   ============================================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.55 0.25 258 / 0.4); }
+  50%       { box-shadow: 0 0 0 8px oklch(0.55 0.25 258 / 0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes timeline-draw {
+  from { scaleY: 0; transform-origin: top; }
+  to   { scaleY: 1; transform-origin: top; }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animation Utility Classes ─── */
+.animate-fade-in         { animation: fade-in var(--duration-base) var(--ease-out) both; }
+.animate-slide-up        { animation: slide-up var(--duration-slow) var(--ease-out) both; }
+.animate-slide-in-right  { animation: slide-in-right var(--duration-base) var(--ease-out) both; }
+.animate-scale-in        { animation: scale-in var(--duration-base) var(--ease-spring) both; }
+.animate-count-up        { animation: count-up var(--duration-slow) var(--ease-spring) both; }
+
+.animate-stagger-1 { animation-delay: 50ms; }
+.animate-stagger-2 { animation-delay: 100ms; }
+.animate-stagger-3 { animation-delay: 150ms; }
+.animate-stagger-4 { animation-delay: 200ms; }
+.animate-stagger-5 { animation-delay: 250ms; }
+
+/* ============================================================
+   COMPONENT OVERRIDES & CUSTOM STYLES
+   ============================================================ */
+
+/* ─── Glass Surface ─── */
+.glass {
+  background: oklch(0.10 0.008 258 / 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 0.06);
+}
+
+/* ─── Gradient Text ─── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-brand-400), var(--color-accent-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Shimmer Effect for Skeletons ─── */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-card) 25%,
+    var(--color-secondary) 50%,
+    var(--color-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ─── Route Timeline ─── */
+.route-station-row {
+  animation: slide-up var(--duration-slow) var(--ease-out) both;
+}
+
+/* ─── Line Color Utilities (for inline use) ─── */
+.line-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
