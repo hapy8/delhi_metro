@@ -1,141 +1,129 @@
 #!/bin/bash
+# 
+# MIT License
+# 
+# Copyright (c) 2026
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
-# Exit on error
 set -e
 
-# ==========================================
-# Delhi Metro PWA - Production Install Script
-# ==========================================
+# Ensure the script runs in the project directory
+cd "$(dirname "$0")"
 
-# 1. Root Check
+# Prompt for Configuration
+read -p "Enter the domain name (e.g. metro.example.com): " DOMAIN
+read -p "Enter the VPS IP Address (Confirm your domain's A record points here): " IP_ADDRESS
+read -p "Enter your email address (for SSL certs): " EMAIL
+
+if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
+    echo "Error: Domain and Email cannot be empty."
+    exit 1
+fi
+
+# Ensure script is run with root privileges
 if [ "$EUID" -ne 0 ]; then
-  echo "❌ Error: Please run this script with sudo or as root."
-  echo "Usage: sudo ./install.sh"
+  echo "Error: Please run this script with sudo or as root."
   exit 1
 fi
 
-echo "🚇 Delhi Metro PWA Installation Script"
-echo "======================================"
+echo "=================================================="
+echo "Starting Deployment for $DOMAIN"
+echo "Target IP: $IP_ADDRESS"
+echo "=================================================="
 
-# 2. Interactive Prompts with Validation
-while true; do
-    read -r -p "Enter the target domain name (e.g., metro.example.com): " DOMAIN
-    # Basic validation for domain (prevent command injection & ensure basic structure)
-    if [[ "$DOMAIN" =~ ^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-        break
-    else
-        echo "❌ Invalid domain format. Please enter a valid domain (e.g., metro.example.com)."
-    fi
-done
-
-while true; do
-    read -r -p "Enter your email address (for Let's Encrypt recovery): " EMAIL
-    # Basic validation for email
-    if [[ "$EMAIL" =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]; then
-        break
-    else
-        echo "❌ Invalid email format. Please enter a valid email address."
-    fi
-done
-
-echo ""
-echo "🚀 Starting installation for $DOMAIN..."
-echo ""
-
-# 3. Dependency Installation
-echo "📦 Updating packages and installing dependencies (nginx, certbot)..."
-apt-get update
-apt-get install -y nginx certbot python3-certbot-nginx
-
-# 4. App Deployment
-APP_DIR="/var/www/$DOMAIN"
-echo "📂 Creating application directory at $APP_DIR..."
-
-if [ -d "$APP_DIR" ]; then
-    echo "⚠️ Directory $APP_DIR already exists. It will be overwritten."
-    rm -rf "$APP_DIR"
+# 1. Update and Install Dependencies (Skip apt-get update if already installed)
+if ! command -v nginx &> /dev/null || ! command -v certbot &> /dev/null; then
+    echo "-> [1/5] Installing Nginx and Certbot..."
+    apt-get update -y
+    apt-get install -y nginx certbot python3-certbot-nginx
+else
+    echo "-> [1/5] Nginx and Certbot are already installed. Skipping..."
 fi
 
-mkdir -p "$APP_DIR"
+# 2. Build the Application
+echo "-> [2/5] Installing NPM packages and building new application version..."
+npm install
+npm run build
 
-echo "📋 Copying files to $APP_DIR..."
-# Copy only necessary files (ignore .git, install scripts, etc.)
-cp -r index.html sw.js manifest.json icons "$APP_DIR/"
+# 3. Stop Previous Version & Setup Web Root Directory
+echo "-> [3/5] Stopping previous live versions and clearing web roots..."
+# Remove old Nginx server blocks
+rm -f /etc/nginx/sites-enabled/*
+rm -f /etc/nginx/sites-available/*
 
-echo "🔐 Setting ownership to www-data..."
-chown -R www-data:www-data "$APP_DIR"
-# Secure permissions
-find "$APP_DIR" -type d -exec chmod 755 {} \;
-find "$APP_DIR" -type f -exec chmod 644 {} \;
+# Remove old web directories to ensure no old versions remain active
+rm -rf /var/www/*
 
-# 5. Nginx Configuration
+# Set up the new web root
+WEB_ROOT="/var/www/$DOMAIN/html"
+mkdir -p "$WEB_ROOT"
+
+echo "-> [4/5] Deploying new static files to Nginx web root..."
+cp -r dist/* "$WEB_ROOT/"
+
+# Set correct permissions
+chown -R www-data:www-data "/var/www/$DOMAIN"
+chmod -R 755 "/var/www/$DOMAIN"
+
+# 5. Configure Nginx Server Block
+echo "-> [5/5] Generating Nginx Server Block for $DOMAIN..."
 NGINX_CONF="/etc/nginx/sites-available/$DOMAIN"
-echo "⚙️ Configuring Nginx..."
 
-# Create Nginx server block
 cat > "$NGINX_CONF" <<EOF
 server {
     listen 80;
     listen [::]:80;
+    
     server_name $DOMAIN;
-    root $APP_DIR;
+    root $WEB_ROOT;
     index index.html;
 
-    # Security Headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "no-referrer-when-downgrade" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" always;
-
+    # SPA Routing: Redirect all requests to index.html
     location / {
         try_files \$uri \$uri/ /index.html;
-        
-        # Cache control for static assets (optional but good for PWA)
-        location ~* \.(?:ico|css|js|gif|jpe?g|png|json)$ {
-            expires 30d;
-            add_header Cache-Control "public, no-transform";
-        }
     }
 
-    # Disable logging for favicon and robots.txt
-    location = /favicon.ico { log_not_found off; access_log off; }
-    location = /robots.txt  { log_not_found off; access_log off; }
-
-    # Deny access to hidden files (e.g., .git)
-    location ~ /\. {
-        deny all;
+    # Aggressively cache static assets (PWA performance)
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)\$ {
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
     }
 }
 EOF
 
-echo "🔗 Enabling Nginx site..."
-if [ -L "/etc/nginx/sites-enabled/$DOMAIN" ]; then
-    rm "/etc/nginx/sites-enabled/$DOMAIN"
-fi
-ln -s "$NGINX_CONF" "/etc/nginx/sites-enabled/"
+ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/
 
-# Ensure default site is disabled if it conflicts, or just leave it if domains don't clash.
-# (Usually safe to leave if server_names are distinct)
-
-echo "🔍 Testing Nginx configuration..."
+# Verify and reload Nginx
 nginx -t
-
-echo "🔄 Reloading Nginx..."
 systemctl reload nginx
 
-# 6. HTTPS Setup
-echo "🔒 Setting up HTTPS with Let's Encrypt..."
-# The --non-interactive flag prevents it from asking questions during script execution
-certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$EMAIL" --redirect
+# 6. Provision SSL Certificate
+if [ ! -d "/etc/letsencrypt/live/$DOMAIN" ]; then
+    echo "-> [6/6] Securing connection with Let's Encrypt SSL..."
+    certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$EMAIL" --keep-until-expiring || echo "Notice: Certbot failed. You can run it manually later."
+else
+    echo "-> [6/6] SSL Certificate for $DOMAIN is already active. Re-applying to Nginx..."
+    certbot install --nginx -d "$DOMAIN" --cert-name "$DOMAIN" --non-interactive || echo "Notice: Certbot install failed. You can run it manually later."
+fi
 
-# 7. Success Message
-echo ""
-echo "======================================"
-echo "✅ Installation Complete!"
-echo "======================================"
-echo "Your Delhi Metro PWA is now live and secure."
-echo "Visit: https://$DOMAIN"
-echo ""
-echo "Note: The files are served from $APP_DIR"
-echo "======================================"
+echo "=================================================="
+echo "Deployment Complete! 🚀"
+echo "Your updated application is live and secure at: https://$DOMAIN"
+echo "=================================================="

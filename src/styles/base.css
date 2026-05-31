@@ -1,0 +1,36 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-family);
+  background: linear-gradient(160deg, var(--color-bg-start) 0%, var(--color-bg-mid) 55%, var(--color-bg-end) 100%);
+  color: var(--color-text-main);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  outline: none;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+}

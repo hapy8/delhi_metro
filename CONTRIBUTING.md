@@ -22,7 +22,7 @@ This is a simple static PWA. There are no complex build steps required for local
    ```bash
    python3 -m http.server 8000
    ```
-2. Open your browser and navigate to `http://localhost:8000`.
+2. Open your browser and navigate to the local development server URL.
 
 ### Important Notes
 
