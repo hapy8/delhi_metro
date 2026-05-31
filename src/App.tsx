@@ -6,7 +6,7 @@ import { InstallBanner } from "@/components/pwa/InstallBanner";
 import { useRouteSearch } from "@/hooks/useRouteSearch";
 import { useOffline } from "@/hooks/useOffline";
 import { usePWA } from "@/hooks/usePWA";
-import { cn } from "@/lib/utils";
+
 
 /**
  * Root application component.
@@ -18,18 +18,13 @@ export function App() {
   const search = useRouteSearch();
 
   return (
-    <div className="flex flex-col min-h-dvh">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-background">
       {/* ── Header ── */}
       <AppHeader isOffline={isOffline} />
 
       {/* ── Main content ── */}
-      <main
-        className={cn(
-          "flex-1 w-full mx-auto px-4 pb-12 pt-5",
-          "flex flex-col gap-4"
-        )}
-        style={{ maxWidth: "var(--max-content-width)" }}
-      >
+      <main className="flex-1 overflow-y-auto overscroll-y-none">
+        <div className="w-full max-w-lg mx-auto px-4 pb-12 pt-4 flex flex-col gap-6">
         {/* Search Form */}
         <SearchCard
           fromStation={search.fromStation}
@@ -57,6 +52,7 @@ export function App() {
 
         {/* PWA Install Banner */}
         <InstallBanner {...pwa} />
+        </div>
       </main>
     </div>
   );

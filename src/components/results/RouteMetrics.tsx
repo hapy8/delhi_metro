@@ -7,32 +7,23 @@ interface RouteMetricsProps {
   interchanges: number;
 }
 
-/**
- * Three-column grid of route stats: stations, time, interchanges.
- */
 export function RouteMetrics({ stations, timeMin, interchanges }: RouteMetricsProps) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-4">
       <MetricCard
-        icon={<Train className="size-4" />}
+        icon={<Train className="size-5 text-blue-500" />}
         value={stations}
         label="Stations"
-        accentColor="#3B82F6"
-        animationDelay={0}
       />
       <MetricCard
-        icon={<Clock className="size-4" />}
+        icon={<Clock className="size-5 text-orange-500" />}
         value={`${timeMin}m`}
         label="Est. Time"
-        accentColor="#F97316"
-        animationDelay={60}
       />
       <MetricCard
-        icon={<RefreshCw className="size-4" />}
+        icon={<RefreshCw className="size-5 text-emerald-500" />}
         value={interchanges}
-        label="Interchanges"
-        accentColor="#10B981"
-        animationDelay={120}
+        label="Changes"
       />
     </div>
   );

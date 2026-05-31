@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { ArrowDownUp, ArrowRight, AlertCircle } from "lucide-react";
+import { ArrowDownUp, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
 import { StationSearch } from "./StationSearch";
 import { RoutePreference } from "./RoutePreference";
 import type { SearchError } from "@/hooks/useRouteSearch";
@@ -21,16 +19,13 @@ interface SearchCardProps {
 }
 
 const ERROR_MESSAGES: Record<SearchError, string> = {
-  EMPTY:         "Please enter both a source and destination station.",
-  INVALID_FROM:  "Source station not found. Please select from the list.",
-  INVALID_TO:    "Destination station not found. Please select from the list.",
-  SAME_STATION:  "Source and destination must be different stations.",
-  NO_ROUTE:      "No route found between these stations. Please try another pair.",
+  EMPTY:         "Please select both source and destination stations.",
+  INVALID_FROM:  "Source station is invalid.",
+  INVALID_TO:    "Destination station is invalid.",
+  SAME_STATION:  "Source and destination cannot be the same.",
+  NO_ROUTE:      "No route found between these stations.",
 };
 
-/**
- * Main search form — composes StationSearch + RoutePreference + action button.
- */
 export function SearchCard({
   fromStation,
   toStation,
@@ -43,106 +38,74 @@ export function SearchCard({
   error,
   onClearError,
 }: SearchCardProps) {
-  const [swapAnimating, setSwapAnimating] = useState(false);
-
-  const handleSwap = () => {
-    setSwapAnimating(true);
-    setTimeout(() => setSwapAnimating(false), 400);
-    onSwap();
-  };
-
+  
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") onSearch();
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border bg-card shadow-lg",
-        "p-5 flex flex-col gap-4",
-        "animate-slide-up"
-      )}
-      onKeyDown={handleKeyDown}
-    >
-      {/* Route Preference */}
+    <div onKeyDown={handleKeyDown} className="flex flex-col gap-4">
+      
       <RoutePreference value={preference} onChange={onPreferenceChange} />
 
-      {/* From / Swap / To */}
-      <div className="relative flex flex-col gap-2">
-        <StationSearch
-          id="from-inp"
-          label="From Station"
-          placeholder="Search source station…"
-          value={fromStation}
-          onChange={(v) => { onFromChange(v); onClearError(); }}
-          excludeStation={toStation}
-          variant="from"
-        />
+      {/* Connected Inputs Container */}
+      <div className="bg-card rounded-2xl shadow-sm p-2 flex flex-col relative border border-border/50">
+        
+        <div className="relative pl-10 pr-12">
+          {/* Vertical Connecting Line (Apple Maps style) */}
+          <div className="absolute left-4 top-5 bottom-5 w-0.5 bg-muted-foreground/20 rounded-full flex flex-col">
+            <div className="size-2 rounded-full border-2 border-primary bg-background absolute -top-1 -left-[3px]" />
+            <div className="size-2 rounded-full border-2 border-accent bg-background absolute -bottom-1 -left-[3px]" />
+          </div>
 
-        {/* Swap button */}
-        <div className="flex justify-center relative z-10 -my-1">
-          <button
-            type="button"
-            aria-label="Swap stations"
-            onClick={handleSwap}
-            className={cn(
-              "size-8 rounded-full",
-              "flex items-center justify-center",
-              "bg-card border border-border shadow-md",
-              "text-muted-foreground hover:text-foreground",
-              "hover:border-ring/50 hover:shadow-lg",
-              "transition-all duration-200 active:scale-90",
-              swapAnimating && "rotate-180"
-            )}
-            style={{ transition: "transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms ease" }}
-          >
-            <ArrowDownUp className="size-3.5" />
-          </button>
+          {/* From Input */}
+          <div className="relative">
+            <StationSearch
+              id="from-inp"
+              placeholder="Source Station"
+              value={fromStation}
+              onChange={(v) => { onFromChange(v); onClearError(); }}
+              excludeStation={toStation}
+            />
+          </div>
+          
+          <div className="h-px bg-border/60 my-0 ml-0 w-full" />
+
+          {/* To Input */}
+          <div className="relative">
+            <StationSearch
+              id="to-inp"
+              placeholder="Destination Station"
+              value={toStation}
+              onChange={(v) => { onToChange(v); onClearError(); }}
+              excludeStation={fromStation}
+            />
+          </div>
         </div>
 
-        <StationSearch
-          id="to-inp"
-          label="To Station"
-          placeholder="Search destination station…"
-          value={toStation}
-          onChange={(v) => { onToChange(v); onClearError(); }}
-          excludeStation={fromStation}
-          variant="to"
-        />
+        {/* Swap Button overlaps the center divider */}
+        <Button 
+          type="button"
+          variant="secondary" 
+          size="icon" 
+          className="absolute right-4 top-1/2 -translate-y-1/2 size-9 rounded-full shadow-sm bg-secondary text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+          onClick={onSwap}
+        >
+          <ArrowDownUp className="size-4" />
+        </Button>
       </div>
 
-      {/* Error state */}
       {error && (
-        <Alert
-          variant="destructive"
-          className="py-2.5 animate-scale-in border-destructive/30 bg-destructive/10"
-        >
-          <AlertCircle className="size-3.5" />
-          <AlertDescription className="text-xs">
+        <Alert variant="destructive" className="rounded-xl border-0 shadow-sm bg-destructive/10 text-destructive">
+          <AlertCircle className="size-4" />
+          <AlertDescription>
             {ERROR_MESSAGES[error]}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* CTA button */}
-      <Button
-        id="find-route-btn"
-        type="button"
-        onClick={onSearch}
-        className={cn(
-          "w-full h-11 text-sm font-semibold rounded-xl",
-          "bg-primary hover:bg-primary/90 text-primary-foreground",
-          "shadow-md hover:shadow-lg hover:-translate-y-px",
-          "transition-all duration-200",
-          "relative overflow-hidden",
-          "after:absolute after:inset-0 after:bg-gradient-to-r",
-          "after:from-transparent after:via-white/10 after:to-transparent",
-          "after:translate-x-[-200%] hover:after:translate-x-[200%]",
-          "after:transition-transform after:duration-700"
-        )}
-      >
-        <ArrowRight data-icon="inline-end" />
-        Find Route
+      <Button onClick={onSearch} size="lg" className="rounded-xl w-full text-[16px] font-semibold h-12 shadow-sm">
+        Route
       </Button>
     </div>
   );

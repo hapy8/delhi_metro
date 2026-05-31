@@ -1,6 +1,7 @@
 import { Download, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent } from "@/components/ui/card";
 import type { UsePWAReturn } from "@/hooks/usePWA";
 
 interface InstallBannerProps extends UsePWAReturn {}
@@ -20,11 +21,6 @@ const IOS_STEPS = [
   },
 ] as const;
 
-/**
- * PWA install prompt banner.
- * Shows a download button for Chrome/Android and manual steps for iOS.
- * Hidden when already in standalone (installed) mode.
- */
 export function InstallBanner({
   status,
   install,
@@ -36,88 +32,44 @@ export function InstallBanner({
   const isInstalling = status === "installing";
 
   return (
-    <div className="flex flex-col gap-2 animate-slide-up">
-      {/* Main banner card */}
-      <div
-        className={cn(
-          "flex items-center gap-3 rounded-2xl border border-border",
-          "bg-card p-4 shadow-sm"
-        )}
-      >
-        {/* Icon */}
-        <div
-          className="flex items-center justify-center size-10 rounded-xl shrink-0"
-          style={{
-            background: "oklch(0.55 0.25 258 / 0.1)",
-            color: "oklch(0.55 0.25 258)",
-          }}
-        >
-          {isInstalled ? (
-            <CheckCircle className="size-5" />
-          ) : (
-            <Download className="size-5" />
+    <div className="flex flex-col gap-4 mt-4">
+      <Card>
+        <CardContent className="flex items-center gap-4 p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
+            {isInstalled ? <CheckCircle className="size-5" /> : <Download className="size-5" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold leading-none tracking-tight">
+              {isInstalled ? "App Installed!" : "Add to Home Screen"}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isInstalled
+                ? "Delhi Metro Navigator is ready to use offline."
+                : "Works offline · No app store needed"}
+            </p>
+          </div>
+          {!isInstalled && (
+            <Button size="sm" onClick={install} disabled={isInstalling} className="shrink-0">
+              {isInstalling ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
+              {isInstalling ? "Installing..." : "Install"}
+            </Button>
           )}
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Text */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground">
-            {isInstalled ? "App Installed!" : "Add to Home Screen"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5 truncate">
-            {isInstalled
-              ? "Delhi Metro Navigator is ready to use offline."
-              : "Works offline · No app store needed"}
-          </p>
-        </div>
-
-        {/* Button */}
-        {!isInstalled && (
-          <Button
-            id="install-btn"
-            size="sm"
-            onClick={install}
-            disabled={isInstalling}
-            className="shrink-0 rounded-xl"
-          >
-            {isInstalling ? (
-              <Loader2 data-icon="inline-start" className="animate-spin" />
-            ) : (
-              <Download data-icon="inline-start" />
-            )}
-            {isInstalling ? "Installing…" : "Install"}
-          </Button>
-        )}
-      </div>
-
-      {/* iOS manual steps */}
       {showIOSGuide && (
-        <div
-          className={cn(
-            "rounded-2xl border border-border bg-secondary/30 p-4",
-            "animate-slide-up"
-          )}
-        >
-          <p className="text-xs font-semibold text-foreground mb-3">
-            📱 How to install on your device
-          </p>
-          <ol className="flex flex-col gap-2">
-            {IOS_STEPS.map((step) => (
-              <li key={step.num} className="flex items-start gap-2.5">
-                <span
-                  className="flex items-center justify-center size-5 rounded-full text-[10px] font-bold shrink-0 mt-0.5"
-                  style={{
-                    background: "oklch(0.55 0.25 258 / 0.15)",
-                    color: "oklch(0.55 0.25 258)",
-                  }}
-                >
-                  {step.num}
-                </span>
-                <p className="text-xs text-muted-foreground leading-relaxed">{step.text}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
+        <Alert>
+          <AlertTitle className="text-sm font-semibold">📱 How to install</AlertTitle>
+          <AlertDescription className="mt-2 text-sm">
+            <ol className="flex flex-col gap-2">
+              {IOS_STEPS.map((step) => (
+                <li key={step.num} className="flex gap-2 text-muted-foreground">
+                  <span className="font-bold text-foreground">{step.num}.</span> {step.text}
+                </li>
+              ))}
+            </ol>
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );
